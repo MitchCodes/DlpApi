@@ -45,6 +45,51 @@ def _build_format_selector(quality: str, resolution: int | None) -> str:
     return "/".join(parts) + "/best"
 
 
+def _select_bestaudio_leastres_format(url: str) -> str:
+    ydl_opts = {
+        "quiet": True,
+        "no_warnings": True,
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+
+    formats = info.get("formats") or []
+    audio_formats = [
+        f
+        for f in formats
+        if f.get("acodec") not in (None, "none") and f.get("vcodec") in (None, "none")
+    ]
+    video_formats = [
+        f
+        for f in formats
+        if f.get("vcodec") not in (None, "none") and f.get("height") is not None
+    ]
+
+    if not audio_formats and not video_formats:
+        return "best"
+
+    def audio_rank(fmt: dict) -> tuple[float, float]:
+        abr = fmt.get("abr") or 0.0
+        tbr = fmt.get("tbr") or 0.0
+        return (abr, tbr)
+
+    def video_rank(fmt: dict) -> tuple[int, float]:
+        height = fmt.get("height") or 10_000
+        tbr = fmt.get("tbr") or 0.0
+        return (height, tbr)
+
+    best_audio = max(audio_formats, key=audio_rank, default=None)
+    least_res_video = min(video_formats, key=video_rank, default=None)
+
+    if least_res_video and best_audio:
+        return f"{least_res_video['format_id']}+{best_audio['format_id']}"
+    if least_res_video:
+        return str(least_res_video["format_id"])
+    if best_audio:
+        return str(best_audio["format_id"])
+    return "best"
+
+
 def _run_ffmpeg(input_path: Path, output_path: Path, output_format: str) -> None:
     audio_codec_map = {
         "mp3": "libmp3lame",
@@ -98,7 +143,10 @@ def download_and_convert(
     request_dir = download_root / request_id
     request_dir.mkdir(parents=True, exist_ok=True)
 
-    format_selector = _build_format_selector(quality, resolution)
+    if quality.strip().lower() == "bestaudioleastres":
+        format_selector = _select_bestaudio_leastres_format(url)
+    else:
+        format_selector = _build_format_selector(quality, resolution)
     output_template = str(request_dir / f"{request_id}.%(ext)s")
 
     ydl_opts = {

@@ -26,8 +26,26 @@ If no auth token is configured, the API logs a warning and allows requests witho
 **Download Endpoint**
 `POST /download`
 - `url`: media URL (required)
-- `quality`: yt-dlp format selector (default `best`)
-- `resolution`: max height in pixels (optional)
-- `output_format`: one of `mp4`, `mkv`, `mov`, `webm`, `avi`, `flv`, `gif`, `mp3`, `wav`, `m4a`, `aac`, `flac`, `opus`, `ogg`, `vorbis`, `alac`
+- `quality`: yt-dlp format selector (default `best`). Special value `bestaudioleastres` picks the lowest-res video stream plus the best audio stream.
+- `resolution`: max height in pixels (optional). If provided, a height filter is applied; a fallback to `best` is used if no match is available.
+- `output_format`: empty string to keep original format, or one of `mp4`, `mkv`, `mov`, `webm`, `avi`, `flv`, `gif`, `mp3`, `wav`, `m4a`, `aac`, `flac`, `opus`, `ogg`, `vorbis`, `alac`
+
+**Example Request**
+```bash
+curl -X POST "http://localhost:8000/download" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "url": "https://www.youtube.com/watch?v=VIDEO_ID",
+    "quality": "best",
+    "resolution": 720,
+    "output_format": "mp4"
+  }'
+```
+
+**Response**
+The endpoint returns the downloaded file as the response body. Response headers include:
+- `X-Request-Id`
+- `X-Output-Format` (echoes the requested output format)
 
 The endpoint returns the downloaded file directly. It requires a bearer token only when one is configured.
