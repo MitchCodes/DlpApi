@@ -5,6 +5,8 @@ on:
     branches: [ "main" ]
     tags: [ "v*" ]
   workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 0"
 
 permissions:
   contents: read
