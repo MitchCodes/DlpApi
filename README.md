@@ -6,6 +6,14 @@ An API wrapper for yt-dlp.
 2. Run the API: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
 3. Open Swagger UI at `http://localhost:8000/docs`
 
+**Docker**
+1. Build: `docker build -t dlp-api .`
+2. Run: `docker run --rm -p 8000:8000 dlp-api`
+3. Swagger UI: `http://localhost:8000/docs`
+
+If you want to set an auth token:
+`docker run --rm -p 8000:8000 -e DLP_API_AUTH_TOKEN=change-me dlp-api`
+
 **Configuration**
 - Environment variables (highest priority):
   - `DLP_API_AUTH_TOKEN`
