@@ -25,7 +25,7 @@ AUDIO_FORMATS = {
     "vorbis",
     "alac",
 }
-OUTPUT_FORMATS = VIDEO_FORMATS | AUDIO_FORMATS | GIF_FORMATS
+OUTPUT_FORMATS = VIDEO_FORMATS | AUDIO_FORMATS | GIF_FORMATS | {""}
 
 
 class DownloadRequest(BaseModel):
@@ -41,6 +41,7 @@ class DownloadRequest(BaseModel):
         le=4320,
     )
     output_format: Literal[
+        "",
         "mp4",
         "mkv",
         "mov",
@@ -57,7 +58,10 @@ class DownloadRequest(BaseModel):
         "ogg",
         "vorbis",
         "alac",
-    ] = Field(default="mp4", description="Desired output format")
+    ] = Field(
+        default="",
+        description="Desired output format. Empty string keeps original format.",
+    )
 
 
 class DownloadResponse(BaseModel):

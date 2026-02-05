@@ -116,6 +116,9 @@ def download_and_convert(
 
     downloaded = _pick_latest_file(request_dir, request_id)
 
+    if not output_format:
+        return request_id, downloaded
+
     desired_path = request_dir / f"{request_id}.{output_format}"
     if downloaded.suffix.lower().lstrip(".") != output_format:
         _run_ffmpeg(downloaded, desired_path, output_format)
